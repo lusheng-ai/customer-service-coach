@@ -85,9 +85,10 @@
 状态机 → 再次更新上下文
   ↓
 判断是否结束，否则进入下一轮
+```
+---
 
 ## 运行 Demo
-
 本项目提供了一个可直接运行的完整 Demo 程序：`cs_dialogue_demo.py`。
 在运行前您先需要先把support/llm_api.py文件中的OPENAI_API_KEY、OPENAI_BASE_URL和OPENAI_MODEL改成您实际中调用的大模型配置。 
 你可以通过运行该脚本，体验一轮完整的智能客服陪练流程，包括：
