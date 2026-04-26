@@ -2,45 +2,47 @@ from model import (
     AskInfo,
     ScenarioInfo,
     TriedStep,
+    FlowRule,
 )
 
 # 构造测试场景库
 def build_demo_scenario() -> ScenarioInfo:
     return ScenarioInfo(
-        id="netcard_nfc_fail",
-        name="网证申领/NFC读卡失败",
-        desc="用户在申领网证过程中，手机在读卡/刷证步骤无法完成，流程停滞。",
+        id="invoice_modify",
+        name="发票开具 / 发票修改",
+        desc="用户在电商平台下单购物，用户发现发票信息填写错误，希望修改发票信息。",
         initial_questions={
-            "I1": "身份证识别时直接一点反应都没有怎么办？",
-            "I2": "我卡在读卡那一步了，怎么办？",
-            "I3": "我手机不具备NFC怎么办？",
+            "I1": "我的发票信息填错了，怎么修改？",
         },
         ask_infos=[
-            AskInfo(id="Q1", desc="页面提示内容是什么", slot_values=[]),
-            AskInfo(id="Q2", desc="手机是否已经打开NFC功能", slot_values=["yes", "no", "unknown"]),
-            AskInfo(id="Q3", desc="手机是否具备NFC功能", slot_values=["yes", "no", "unknown"]),
-            AskInfo(id="Q4", desc="请问您是在什么场景下使用呢", slot_values=[]),
-            AskInfo(id="Q5", desc="按要求操作后还是失败，失败原因是否和之前一样", slot_values=["yes", "no"]),
-            AskInfo(id="Q6", desc="读卡是否成功", slot_values=["yes", "no"]),
+            AskInfo(id="Q1", desc="这笔订单是平台自营还是第三方卖家订单？", slot_values=["self", "third_party"]),
+            AskInfo(id="Q2", desc="这笔订单目前是还未完成，还是已经完成？", slot_values=["unfinished", "finished"]),
         ],
         tried_steps=[
-            TriedStep(id="A1", desc="指导用户打开手机NFC功能", slot_values=["success", "fail"], is_terminal=False),
-            TriedStep(id="A2", desc="指导用户查看手机是否具备NFC功能", slot_values=["success", "fail"],
-                      is_terminal=False),
-            TriedStep(id="A3", desc="若手机型号不支持NFC，指导用户更换支持NFC的手机", slot_values=["success", "fail"],
-                      is_terminal=True),
-            TriedStep(id="A4", desc="指导正确的读卡位置，并建议摘取手机保护壳", slot_values=["success", "fail"],
-                      is_terminal=True),
-            TriedStep(id="A5", desc="如果无法使用网证，指导其使用身份证进行认证解冻微信",
+            TriedStep(id="A1", desc="若为平台自营且订单未完成，引导用户在订单详情中修改发票信息",
                       slot_values=["success", "fail"], is_terminal=True),
-            TriedStep(id="A6", desc="如果无法使用网证，指导其使用手机号码登录爱山东", slot_values=["success", "fail"],
-                      is_terminal=True),
+            TriedStep(id="A2", desc="若为第三方订单，告知用户联系对应卖家处理发票修改问题",
+                      slot_values=["success", "fail"], is_terminal=True),
+            TriedStep(id="A3",
+                      desc="若为平台自营且订单已完成或暂无法自助修改，告知用户提供正确的修改信息，由客服登记后协助处理",
+                      slot_values=["success", "fail"], is_terminal=True),
         ],
         fallbacks={
-            "P1": "很抱歉没能直接帮到您。后续如有疑问可通过APP“在线客服”进行咨询或拨打4001171166服务热线，人工服务时间8:30-20:30，我们将竭诚为您服务。"
+            "P1": "很抱歉，本次未能完成发票修改。建议您保留订单信息和需修改的发票信息，我们将努力协调处理这个问题，在3个工作日内给您一个妥善的回复！"
         },
-
-        # 此单元测试不需要流程规则
-        flow_rules=[],
+        flow_rules=[
+            # 询问
+            FlowRule(target_id="Q1", target_type="ask", condition=[["I1=yes"]]),
+            FlowRule(target_id="Q2", target_type="ask", condition=[["Q1=self"]]),
+            # 操作
+            FlowRule(target_id="A1", target_type="step", condition=[["Q1=self", "Q2=unfinished"]]),
+            FlowRule(target_id="A2", target_type="step", condition=[["Q1=third_party"]]),
+            FlowRule(target_id="A3", target_type="step", condition=[["Q1=self", "Q2=finished"]]),
+            # 兜底
+            FlowRule(target_id="P1", target_type="fallback", condition=[["A1=fail"], ["A2=fail"], ["A3=fail"]]),
+            # 结束
+            FlowRule(target_id="E", target_type="end",
+                     condition=[["A1=success"], ["A2=success"], ["A3=success"], ["P1=success"]]),
+        ],
     )
 
