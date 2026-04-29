@@ -11,8 +11,7 @@
 本项目提供了一个可直接运行的完整 Demo 程序：`cs_dialogue_demo.py`。
 在运行前您先需要先把support/llm_api.py文件中的OPENAI_API_KEY、OPENAI_BASE_URL和OPENAI_MODEL改成您实际中调用的大模型配置。 
 你可以通过运行该脚本，体验一轮完整的智能客服陪练流程，包括：
-![Uploading ChatGPT Image 2026年4月29日 22_50_59.png…]()
-
+<img width="1448" height="1086" alt="ChatGPT Image 2026年4月29日 22_50_59" src="https://github.com/user-attachments/assets/b0c966a3-7ceb-46ce-b5c4-d740e53e39fa" />
 
 - 加载经典场景库
 - 初始化对话状态
